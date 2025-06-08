@@ -1,51 +1,35 @@
 import logging
 from telegram.ext import Updater, CommandHandler
 import requests
-from bs4 import BeautifulSoup
 
 # Logging setup
-logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
+logging.basicConfig(
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO
+)
 logger = logging.getLogger(__name__)
 
-# Replace this with your actual Telegram Bot Token
+# Replace with your Telegram bot token
 BOT_TOKEN = '8125889296:AAFpdhuo75wSBPQFk60-4m0P52P1hmbxWAI'
 
-# Start command
 def start(update, context):
-    update.message.reply_text("👋 Welcome! Use /getbook <book_id> to fetch a YCT eBook preview link.")
+    update.message.reply_text(
+        "👋 Welcome! Use /getbook <book_id> to fetch a YCT eBook PDF link.\nExample: /getbook 2582"
+    )
 
-# Function to fetch PDF preview link
 def fetch_pdf_link(book_id):
+    pdf_url = f"https://ebook.yctpublication.com/pdf/{book_id}.pdf"
+    headers = {"User-Agent": "Mozilla/5.0"}
+
     try:
-        url = f"https://yctpublication.com/ebook-detail/{book_id}"
-        headers = {
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"
-        }
-
-        response = requests.get(url, headers=headers, timeout=10)
-
-        if response.status_code != 200:
+        response = requests.head(pdf_url, headers=headers, timeout=5)
+        if response.status_code == 200:
+            return pdf_url
+        else:
             return None
-
-        soup = BeautifulSoup(response.text, 'html.parser')
-
-        # First, try to find an iframe (used for preview PDF)
-        iframe = soup.find('iframe')
-        if iframe and 'src' in iframe.attrs:
-            return iframe['src']
-
-        # Second, try to find <a> links that contain .pdf
-        for a in soup.find_all("a", href=True):
-            if ".pdf" in a['href']:
-                return a['href']
-
-        return None
-
     except Exception as e:
-        logger.error(f"Error fetching PDF for book ID {book_id}: {e}")
+        logger.error(f"Error checking PDF URL for book {book_id}: {e}")
         return None
 
-# Command: /getbook <book_id>
 def getbook(update, context):
     if not context.args:
         update.message.reply_text("❗ Please provide a Book ID.\nUsage: /getbook 2582")
@@ -57,11 +41,12 @@ def getbook(update, context):
     pdf_link = fetch_pdf_link(book_id)
 
     if pdf_link:
-        update.message.reply_text(f"✅ Here is your eBook preview:\n{pdf_link}")
+        update.message.reply_text(f"✅ Here is your eBook PDF link:\n{pdf_link}")
     else:
-        update.message.reply_text("❌ PDF link not found. Please try another Book ID.")
+        update.message.reply_text(
+            "❌ PDF link not found. Please try another Book ID."
+        )
 
-# Main bot setup
 def main():
     updater = Updater(BOT_TOKEN, use_context=True)
     dp = updater.dispatcher
@@ -72,5 +57,5 @@ def main():
     updater.start_polling()
     updater.idle()
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
