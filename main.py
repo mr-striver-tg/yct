@@ -7,7 +7,7 @@ from telegram import Update, InputMediaPhoto, InputFile
 from telegram.ext import Updater, CommandHandler, CallbackContext
 
 # === CONFIGURATION ===
-BOT_TOKEN = 'YOUR_BOT_TOKEN'  # Replace with your actual bot token
+BOT_TOKEN = '8125889296:AAFpdhuo75wSBPQFk60-4m0P52P1hmbxWAI'  # Replace with your actual bot token
 BASE_URL = 'https://yctbook.com/bookdetails/'
 
 # === HELPER FUNCTION TO GET PDF LINK ===
